@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * @package     Intelipost_Push
+ * @copyright   Copyright (c) Intelipost
+ * @author      Alex Restani <alex.restani@intelipost.com.br>
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../lib/internal/Magento/Framework/App/etc/routes.xsd">
+    <router id="standard">
+        <route id="intelipost_tracking" frontName="intelipost_tracking">
+            <module name="Intelipost_Tracking" />
+        </route>
+    </router>
+</config>

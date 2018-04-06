@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<config>
+	<event name="sales_order_shipment_track_save_before">
+    	<observer name="intelipost_sales_shipment_track_save_before" instance="Intelipost\Tracking\Observer\Sales\TrackSaveBefore" />
+    </event>
+</config>
+

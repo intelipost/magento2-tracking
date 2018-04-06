@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+/*
+ * @package     Intelipost_Tracking
+ * @copyright   Copyright (c) 2017 Gamuza Technologies (http://www.gamuza.com.br/)
+ * @author      Eneias Ramos de Melo <eneias@gamuza.com.br>
+ */
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/order/:orderId/ship" method="POST">
+        <service class="Intelipost\Tracking\Model\Sales\ShipOrder" method="execute"/>
+        <!--
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+        -->
+    </route>
+</routes>
+
