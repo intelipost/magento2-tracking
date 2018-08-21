@@ -7,10 +7,14 @@
 
 namespace Intelipost\Tracking\Model\Intelipost\Quote\Carrier;
 
+use Magento\Quote\Model\Quote\Address\RateRequest;
+
 class Intelipost
 extends \Magento\Shipping\Model\Carrier\AbstractCarrier
 implements \Magento\Shipping\Model\Carrier\CarrierInterface
 {
+
+protected $_code = 'intelipost';
 
 protected $_trackResultFactory;
 protected $_trackResultErrorFactory;
@@ -36,6 +40,16 @@ public function __construct(
     $this->_trackFactory = $trackFactory;
 
     parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
+}
+
+public function collectRates(RateRequest $request)
+{
+    return;
+}
+
+public function getAllowedMethods()
+{
+    return ['intelipost' => $this->getConfigData ('name')];
 }
 
 /**
