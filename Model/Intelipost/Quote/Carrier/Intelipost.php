@@ -8,21 +8,9 @@
 namespace Intelipost\Tracking\Model\Intelipost\Quote\Carrier;
 
 class Intelipost
-extends \Intelipost\Quote\Model\Carrier\Intelipost
-// extends \Magento\Shipping\Model\Carrier\AbstractCarrier
-// implements \Magento\Shipping\Model\Carrier\CarrierInterface
+extends \Magento\Shipping\Model\Carrier\AbstractCarrier
+implements \Magento\Shipping\Model\Carrier\CarrierInterface
 {
-
-protected $_rateResultFactory;
-protected $_rateMethodFactory;
-protected $_rateErrorFactory;
-
-protected $_scopeConfig;
-protected $_quoteHelper;
-protected $_apiHelper;
-protected $_pickupHelper;
-
-protected $_itemsFactory;
 
 protected $_trackResultFactory;
 protected $_trackResultErrorFactory;
@@ -34,13 +22,6 @@ public function __construct(
     \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
     \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
     \Psr\Log\LoggerInterface $logger,
-    \Magento\Shipping\Model\Rate\ResultFactory $rateResultFactory,
-    \Magento\Quote\Model\Quote\Address\RateResult\MethodFactory $rateMethodFactory,
-    \Intelipost\Quote\Helper\Data $quoteHelper,
-    \Intelipost\Quote\Helper\Api $apiHelper,
-    \Intelipost\Pickup\Helper\Data $pickupHelper,
-    \Intelipost\Quote\Model\QuoteFactory $quoteFactory,
-    \Intelipost\Pickup\Model\ItemsFactory $itemsFactory,
     \Magento\Shipping\Model\Tracking\ResultFactory $trackResultFactory,
     \Magento\Shipping\Model\Tracking\Result\ErrorFactory $trackResultErrorFactory,
     \Magento\Shipping\Model\Tracking\Result\StatusFactory $trackResultStatusFactory,
@@ -48,28 +29,13 @@ public function __construct(
     array $data = []
 )
 {
-    $this->_rateResultFactory = $rateResultFactory;
-    $this->_rateMethodFactory = $rateMethodFactory;
-    $this->_rateErrorFactory  = $rateErrorFactory;
-
-    $this->_scopeConfig = $scopeConfig;
-    $this->_quoteHelper = $quoteHelper;
-    $this->_apiHelper = $apiHelper;
-    $this->_pickupHelper = $pickupHelper;
-
-    $this->_itemsFactory = $itemsFactory;
-
     $this->_trackResultFactory = $trackResultFactory;
     $this->_trackResultErrorFactory = $trackResultErrorFactory;
     $this->_trackResultStatusFactory = $trackResultStatusFactory;
 
     $this->_trackFactory = $trackFactory;
 
-    parent::__construct(
-        $scopeConfig, $rateErrorFactory, $logger,
-        $rateResultFactory, $rateMethodFactory,
-        $quoteHelper, $apiHelper, $quoteFactory, $data
-    );
+    parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
 }
 
 /**
