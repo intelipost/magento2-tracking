@@ -71,7 +71,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
                 $increment_id  = $obj->order_number;
                 $state         = $obj->history->shipment_order_volume_state;
                 $tracking_code = $obj->tracking_code;
-                $comment       = '[Intelipost Webhook] - ' . $obj->history->esprinter_message;
+                $comment       = '[Intelipost Webhook] - ' . $obj->history->shipment_volume_micro_state->default_name;
 
                 $shipmentObj = $this->_collectionFactory->create();
                 $shipmentObj->addFieldToFilter('so.increment_id', $increment_id);

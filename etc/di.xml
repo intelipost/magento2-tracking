@@ -8,7 +8,6 @@
 -->
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Intelipost\Quote\Model\Carrier\Intelipost" type="Intelipost\Tracking\Model\Intelipost\Quote\Carrier\Intelipost" />
     <preference for="\Magento\Shipping\Block\Tracking\Popup" type="Intelipost\Tracking\Block\Shipping\Tracking\Popup" />
     <preference for="Intelipost\Tracking\Api\Sales\Data\ShipmentTrackCreationInterface" type="Intelipost\Tracking\Model\Sales\Order\Shipment\TrackCreation" />
 </config>
