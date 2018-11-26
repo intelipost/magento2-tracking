@@ -43,19 +43,19 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
     public function execute() 
     {
-        $webhook_enabled                  = $this->_scopeConfig->getValue('intelipost_tracking/settings/webhook_enabled');
+        $webhook_enabled                  = $this->_scopeConfig->getValue('carriers/intelipost_tracking/webhook_enabled');
         $config_api_key                   = $this->_scopeConfig->getValue('intelipost_basic/settings/api_key');
-        $track_pre_ship                   = $this->_scopeConfig->getValue('intelipost_tracking/settings/track_pre_ship');
-        $status_created                   = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_created');
-        $status_ready_for_shipment        = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_ready_for_shipment');
-        $status_shipped                   = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_shipped');
-        $track_post_ship                  = $this->_scopeConfig->getValue('intelipost_tracking/settings/track_post_ship');
-        $status_in_transit                = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_in_transit');
-        $status_to_be_delivered           = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_to_be_delivered');
-        $status_delivered                 = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_delivered');
-        $status_clarify_delivery_failed   = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_clarify_delivery_failed');
-        $status_delivery_failed           = $this->_scopeConfig->getValue('intelipost_tracking/settings/status_delivery_failed');
-        $create_shipment_after_ip_shipped = $this->_scopeConfig->getValue('intelipost_tracking/settings/create_shipment_after_ip_shipped');
+        $track_pre_ship                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_pre_ship');
+        $status_created                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_created');
+        $status_ready_for_shipment        = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_ready_for_shipment');
+        $status_shipped                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_shipped');
+        $track_post_ship                  = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_post_ship');
+        $status_in_transit                = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_in_transit');
+        $status_to_be_delivered           = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_to_be_delivered');
+        $status_delivered                 = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivered');
+        $status_clarify_delivery_failed   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_clarify_delivery_failed');
+        $status_delivery_failed           = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivery_failed');
+        $create_shipment_after_ip_shipped = $this->_scopeConfig->getValue('carriers/intelipost_tracking/create_shipment_after_ip_shipped');
 
         $pre_dispatch_events  = array('NEW', 'READY_FOR_SHIPPING', 'SHIPPED');
         $post_dispatch_events = array('TO_BE_DELIVERED', 'IN_TRANSIT', 'DELIVERED', 'CLARIFY_DELIVERY_FAIL', 'DELIVERY_FAILED');
@@ -179,10 +179,10 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
         $track = $this->_track->create();
         $track->setNumber($order->getIncrementId());
-        $track->setCarrierCode('intelipost');
+        $track->setCarrierCode('intelipost_tracking');
         $track->setTitle('Shipment Tracking Number');
         $track->setDescription("Description");
-        $track->setUrl('https://status.ondeestameupedido.com/tracking/'.$this->_scopeConfig->getValue("intelipost_tracking/settings/client_id").'/'.$track->getNumber());
+        $track->setUrl('https://status.ondeestameupedido.com/tracking/'.$this->_scopeConfig->getValue("carriers/intelipost_tracking/client_id").'/'.$track->getNumber());
         $shipment->addTrack($track);
 
         try 
@@ -190,7 +190,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
             $shipment->save();
             $shipment->getOrder()->save();
 
-            if($this->_scopeConfig->getValue("intelipost_tracking/settings/send_shippment_notification"))
+            if($this->_scopeConfig->getValue("carriers/intelipost_tracking/send_shippment_notification"))
             {
                 $this->_objectManager->create('Magento\Shipping\Model\ShipmentNotifier')
                     ->notify($shipment);

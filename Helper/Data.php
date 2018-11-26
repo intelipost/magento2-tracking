@@ -9,7 +9,7 @@ namespace Intelipost\Tracking\Helper;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-	const LOG = 'intelipost.log';
+	const LOG = 'intelipost_tracking.log';
 
 	public function logIntelipost($message)
 	{

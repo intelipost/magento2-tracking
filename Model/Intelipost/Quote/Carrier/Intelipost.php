@@ -14,7 +14,7 @@ extends \Magento\Shipping\Model\Carrier\AbstractCarrier
 implements \Magento\Shipping\Model\Carrier\CarrierInterface
 {
 
-protected $_code = 'intelipost';
+protected $_code = 'intelipost_tracking';
 
 protected $_trackResultFactory;
 protected $_trackResultErrorFactory;
@@ -49,7 +49,7 @@ public function collectRates(RateRequest $request)
 
 public function getAllowedMethods()
 {
-    return ['intelipost' => $this->getConfigData ('name')];
+    return ['intelipost_tracking' => $this->getConfigData ('name')];
 }
 
 /**
@@ -85,7 +85,7 @@ protected function _getTracking($trackings)
         $trackUrl = $track->getTrackUrl();
 
         $status = $this->_trackResultStatusFactory->create();
-        $status->setCarrier('intelipost');
+        $status->setCarrier($this->_code);
         $status->setCarrierTitle($this->getConfigData('title'));
         $status->setTracking($tracking);
         $status->setTrackSummary($this->_getIntelipostTracking($trackUrl));

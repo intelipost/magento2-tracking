@@ -11,12 +11,12 @@ class TrackSaveBefore implements ObserverInterface
 	{
 		$track = $observer->getTrack();
 
-		if ($track->getCarrierCode() == 'intelipost' && !$track->getTrackUrl())
+		if ($track->getCarrierCode() == 'intelipost_tracking' && !$track->getTrackUrl())
 		{
 			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 	        $scopeConfig = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
 
-	        $clientId = $scopeConfig->getValue("intelipost_tracking/settings/client_id");
+	        $clientId = $scopeConfig->getValue("carriers/intelipost_tracking/client_id");
 			$url = 'https://status.ondeestameupedido.com/tracking/'.$clientId.'/'.$track->getNumber();
 			$track->setTrackUrl($url);
 		}

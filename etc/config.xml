@@ -2,11 +2,15 @@
 
 <config>
     <default>
-        <intelipost_tracking>
-            <settings>
-                <client_id />
-            </settings>
-        </intelipost_tracking>
+        <carriers>
+            <intelipost_tracking>
+                <active>1</active>
+                <webhook_enabled>0</webhook_enabled>
+                <model>Intelipost\Tracking\Model\Intelipost\Quote\Carrier\Intelipost</model>
+                <title>Intelipost Tracking</title>
+                <name>Intelipost Tracking</name>
+            </intelipost_tracking>
+        </carriers>
     </default>
 </config>
 
