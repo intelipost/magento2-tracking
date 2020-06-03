@@ -62,7 +62,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
         if($webhook_enabled)
         {
-            $httpRequestObject = new \Zend_Controller_Request_Http();
+            $httpRequestObject = new \Laminas\Http\Request();
             $api_key = $httpRequestObject->getHeader('api-key');
 
             if ($api_key == $config_api_key)
