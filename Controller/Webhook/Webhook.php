@@ -8,8 +8,10 @@
 namespace Intelipost\Tracking\Controller\Webhook;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
 
-class Webhook extends \Magento\Framework\App\Action\Action
+class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
     protected $_scopeConfig;
     protected $_helper;
@@ -41,7 +43,17 @@ class Webhook extends \Magento\Framework\App\Action\Action
         $this->_track              = $track;
     }
 
-    public function execute() 
+    public function createCsrfValidationException(RequestInterface $request): ? InvalidRequestException
+    {
+        return null;
+    }
+
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
+    }
+
+    public function execute()
     {
         $webhook_enabled                  = $this->_scopeConfig->getValue('carriers/intelipost_tracking/webhook_enabled');
         $config_api_key                   = $this->_scopeConfig->getValue('intelipost_basic/settings/api_key');
@@ -62,8 +74,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
         if($webhook_enabled)
         {
-            $httpRequestObject = new \Zend_Controller_Request_Http();
-            $api_key = $httpRequestObject->getHeader('api-key');
+            $api_key = $this->getRequest()->getHeader('api-key');
 
             if ($api_key == $config_api_key)
             {
@@ -82,13 +93,13 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
                 if ((in_array($state, $pre_dispatch_events) && $track_pre_ship)
                     || in_array($state, $post_dispatch_events) && $track_post_ship)
-                {                               
+                {
                     switch (strtoupper($state))
                     {
                         case 'NEW':
                             $status = $status_created;
                             $this->updateOrder($orderId, $status, $comment);
-                            break;                  
+                            break;
 
                         case 'READY_FOR_SHIPPING':
                             $status = $status_ready_for_shipment;
@@ -97,16 +108,16 @@ class Webhook extends \Magento\Framework\App\Action\Action
 
                         case 'SHIPPED':
                             $status = $status_shipped;
-                            $this->updateOrder($orderId, $status, $comment);
                             if($create_shipment_after_ip_shipped)
                                 $this->createShipment($orderId);
+                            $this->updateOrder($orderId, $status, $comment);
                             break;
 
                         case 'IN_TRANSIT':
                             $status = $status_in_transit;
                             $this->updateOrder($orderId, $status, $comment);
                             break;
-                        
+
                         case 'TO_BE_DELIVERED':
                             $status = $status_to_be_delivered;
                             $this->updateOrder($orderId, $status, $comment);
@@ -154,7 +165,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
     {
         $order = $this->_order->load($orderId);
 
-        if (! $order->canShip()) 
+        if (! $order->canShip())
         {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You can\'t create an shipment.')
@@ -162,7 +173,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
         }
 
         $shipment = $this->_convertOrder->toShipment($order);
-        foreach ($order->getAllItems() AS $orderItem) 
+        foreach ($order->getAllItems() AS $orderItem)
         {
             if (! $orderItem->getQtyToShip() || $orderItem->getIsVirtual())
             {
@@ -185,7 +196,7 @@ class Webhook extends \Magento\Framework\App\Action\Action
         $track->setUrl('https://status.ondeestameupedido.com/tracking/'.$this->_scopeConfig->getValue("carriers/intelipost_tracking/client_id").'/'.$track->getNumber());
         $shipment->addTrack($track);
 
-        try 
+        try
         {
             $shipment->save();
             $shipment->getOrder()->save();
@@ -196,8 +207,8 @@ class Webhook extends \Magento\Framework\App\Action\Action
                     ->notify($shipment);
                 $shipment->save();
             }
-        } 
-        catch (\Exception $e) 
+        }
+        catch (\Exception $e)
         {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __($e->getMessage())
