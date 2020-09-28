@@ -6,10 +6,14 @@
  */
 
 namespace Intelipost\Tracking\Controller\Webhook;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Controller\ResultFactory;
+
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
+use Magento\InventoryApi\Api\GetSourcesAssignedToStockOrderedByPriorityInterface;
+use Magento\InventoryCatalogApi\Api\DefaultSourceProviderInterface;
+use Magento\InventorySalesApi\Model\StockByWebsiteIdResolverInterface;
+use Magento\Sales\Api\Data\ShipmentExtensionFactory;
 
 class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
@@ -20,9 +24,12 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
     protected $_order;
     protected $_convertOrder;
     protected $_track;
+    protected $stockByWebsiteIdResolver;
+    protected $getSourcesAssignedToStockOrderedByPriority;
+    protected $defaultSourceProvider;
+    protected $shipmentExtensionFactory;
 
-    public function __construct
-    (
+    public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Intelipost\Tracking\Helper\Data $helper,
         \Magento\Backend\App\Action\Context $context,
@@ -30,20 +37,28 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
         \Intelipost\Quote\Model\Shipment $shipment,
         \Magento\Sales\Model\Order $order,
         \Magento\Sales\Model\Convert\Order $convertOrder,
+        StockByWebsiteIdResolverInterface $stockByWebsiteIdResolver,
+        GetSourcesAssignedToStockOrderedByPriorityInterface $getSourcesAssignedToStockOrderedByPriority,
+        DefaultSourceProviderInterface $defaultSourceProvider,
+        ShipmentExtensionFactory $shipmentExtensionFactory,
         \Magento\Sales\Model\Order\Shipment\TrackFactory $track
-    )
-    {
+    ) {
         parent::__construct($context);
-        $this->_scopeConfig        = $scopeConfig;
-        $this->_helper             = $helper;
-        $this->_collectionFactory  = $collectionFactory;
-        $this->_shipment           = $shipment;
-        $this->_order              = $order;
-        $this->_convertOrder       = $convertOrder;
-        $this->_track              = $track;
+        $this->_scopeConfig = $scopeConfig;
+        $this->_helper = $helper;
+        $this->_collectionFactory = $collectionFactory;
+        $this->_shipment = $shipment;
+        $this->_order = $order;
+        $this->_convertOrder = $convertOrder;
+        $this->_track = $track;
+        $this->stockByWebsiteIdResolver = $stockByWebsiteIdResolver;
+        $this->getSourcesAssignedToStockOrderedByPriority = $getSourcesAssignedToStockOrderedByPriority;
+        $this->defaultSourceProvider = $defaultSourceProvider;
+        $this->shipmentExtensionFactory = $shipmentExtensionFactory;
+
     }
 
-    public function createCsrfValidationException(RequestInterface $request): ? InvalidRequestException
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
     {
         return null;
     }
@@ -55,34 +70,32 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
 
     public function execute()
     {
-        $webhook_enabled                  = $this->_scopeConfig->getValue('carriers/intelipost_tracking/webhook_enabled');
-        $config_api_key                   = $this->_scopeConfig->getValue('intelipost_basic/settings/api_key');
-        $track_pre_ship                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_pre_ship');
-        $status_created                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_created');
-        $status_ready_for_shipment        = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_ready_for_shipment');
-        $status_shipped                   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_shipped');
-        $track_post_ship                  = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_post_ship');
-        $status_in_transit                = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_in_transit');
-        $status_to_be_delivered           = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_to_be_delivered');
-        $status_delivered                 = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivered');
-        $status_clarify_delivery_failed   = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_clarify_delivery_failed');
-        $status_delivery_failed           = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivery_failed');
+        $webhook_enabled = $this->_scopeConfig->getValue('carriers/intelipost_tracking/webhook_enabled');
+        $config_api_key = $this->_scopeConfig->getValue('intelipost_basic/settings/api_key');
+        $track_pre_ship = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_pre_ship');
+        $status_created = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_created');
+        $status_ready_for_shipment = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_ready_for_shipment');
+        $status_shipped = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_shipped');
+        $track_post_ship = $this->_scopeConfig->getValue('carriers/intelipost_tracking/track_post_ship');
+        $status_in_transit = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_in_transit');
+        $status_to_be_delivered = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_to_be_delivered');
+        $status_delivered = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivered');
+        $status_clarify_delivery_failed = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_clarify_delivery_failed');
+        $status_delivery_failed = $this->_scopeConfig->getValue('carriers/intelipost_tracking/status_delivery_failed');
         $create_shipment_after_ip_shipped = $this->_scopeConfig->getValue('carriers/intelipost_tracking/create_shipment_after_ip_shipped');
 
-        $pre_dispatch_events  = array('NEW', 'READY_FOR_SHIPPING', 'SHIPPED');
-        $post_dispatch_events = array('TO_BE_DELIVERED', 'IN_TRANSIT', 'DELIVERED', 'CLARIFY_DELIVERY_FAIL', 'DELIVERY_FAILED');
+        $pre_dispatch_events = ['NEW', 'READY_FOR_SHIPPING', 'SHIPPED'];
+        $post_dispatch_events = ['TO_BE_DELIVERED', 'IN_TRANSIT', 'DELIVERED', 'CLARIFY_DELIVERY_FAIL', 'DELIVERY_FAILED'];
 
-        if($webhook_enabled)
-        {
+        if ($webhook_enabled) {
             $api_key = $this->getRequest()->getHeader('api-key');
 
-            if ($api_key == $config_api_key)
-            {
-                $obj           = json_decode(utf8_encode(file_get_contents('php://input')));
-                $increment_id  = $obj->order_number;
-                $state         = $obj->history->shipment_order_volume_state;
+            if ($api_key == $config_api_key) {
+                $obj = json_decode(utf8_encode(file_get_contents('php://input')));
+                $increment_id = $obj->order_number;
+                $state = $obj->history->shipment_order_volume_state;
                 $tracking_code = $obj->tracking_code;
-                $comment       = '[Intelipost Webhook] - ' . $obj->history->shipment_volume_micro_state->default_name;
+                $comment = '[Intelipost Webhook] - ' . $obj->history->shipment_volume_micro_state->default_name;
 
                 $shipmentObj = $this->_collectionFactory->create();
                 $shipmentObj->addFieldToFilter('so.increment_id', $increment_id);
@@ -92,10 +105,8 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
                 $this->updateTrackingCode($colData, $tracking_code);
 
                 if ((in_array($state, $pre_dispatch_events) && $track_pre_ship)
-                    || in_array($state, $post_dispatch_events) && $track_post_ship)
-                {
-                    switch (strtoupper($state))
-                    {
+                    || in_array($state, $post_dispatch_events) && $track_post_ship) {
+                    switch (strtoupper($state)) {
                         case 'NEW':
                             $status = $status_created;
                             $this->updateOrder($orderId, $status, $comment);
@@ -108,8 +119,9 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
 
                         case 'SHIPPED':
                             $status = $status_shipped;
-                            if($create_shipment_after_ip_shipped)
+                            if ($create_shipment_after_ip_shipped) {
                                 $this->createShipment($orderId);
+                            }
                             $this->updateOrder($orderId, $status, $comment);
                             break;
 
@@ -153,8 +165,7 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
 
     public function updateTrackingCode($colData, $trackingCode)
     {
-        if($trackingCode != null)
-        {
+        if ($trackingCode != null) {
             $_collectionFactory = $this->_shipment->load($colData[0]['id'], 'id');
             $_collectionFactory->setTrackingCode($trackingCode);
             $_collectionFactory->save();
@@ -165,18 +176,15 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
     {
         $order = $this->_order->load($orderId);
 
-        if (! $order->canShip())
-        {
+        if (!$order->canShip()) {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You can\'t create an shipment.')
             );
         }
 
         $shipment = $this->_convertOrder->toShipment($order);
-        foreach ($order->getAllItems() AS $orderItem)
-        {
-            if (! $orderItem->getQtyToShip() || $orderItem->getIsVirtual())
-            {
+        foreach ($order->getAllItems() as $orderItem) {
+            if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
                 continue;
             }
 
@@ -188,28 +196,39 @@ class Webhook extends \Magento\Framework\App\Action\Action implements CsrfAwareA
         $shipment->register();
         $shipment->getOrder()->setIsInProcess(true);
 
+        $websiteId = $order->getStore()->getWebsiteId();
+        $stockId = $this->stockByWebsiteIdResolver->execute((int)$websiteId)->getStockId();
+        $sources = $this->getSourcesAssignedToStockOrderedByPriority->execute((int)$stockId);
+        if (!empty($sources) && count($sources) == 1) {
+            $sourceCode = $sources[0]->getSourceCode();
+        } else {
+            $sourceCode = $this->defaultSourceProvider->getCode();
+        }
+        $shipmentExtension = $shipment->getExtensionAttributes();
+
+        if (empty($shipmentExtension)) {
+            $shipmentExtension = $this->shipmentExtensionFactory->create();
+        }
+        $shipmentExtension->setSourceCode($sourceCode);
+        $shipment->setExtensionAttributes($shipmentExtension);
+
         $track = $this->_track->create();
         $track->setNumber($order->getIncrementId());
         $track->setCarrierCode('intelipost_tracking');
         $track->setTitle('Shipment Tracking Number');
         $track->setDescription("Description");
-        $track->setUrl('https://status.ondeestameupedido.com/tracking/'.$this->_scopeConfig->getValue("carriers/intelipost_tracking/client_id").'/'.$track->getNumber());
+        $track->setUrl('https://status.ondeestameupedido.com/tracking/' . $this->_scopeConfig->getValue("carriers/intelipost_tracking/client_id") . '/' . $track->getNumber());
         $shipment->addTrack($track);
-
-        try
-        {
+        try {
             $shipment->save();
             $shipment->getOrder()->save();
 
-            if($this->_scopeConfig->getValue("carriers/intelipost_tracking/send_shippment_notification"))
-            {
+            if ($this->_scopeConfig->getValue("carriers/intelipost_tracking/send_shippment_notification")) {
                 $this->_objectManager->create('Magento\Shipping\Model\ShipmentNotifier')
                     ->notify($shipment);
                 $shipment->save();
             }
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __($e->getMessage())
             );
