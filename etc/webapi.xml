@@ -9,7 +9,7 @@
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
     <route url="/V1/order/:orderId/ship" method="POST">
-        <service class="Intelipost\Tracking\Model\Sales\ShipOrder" method="execute"/>
+        <service class="Intelipost\Tracking\Api\Sales\ShipOrderInterface" method="execute"/>
         <!--
         <resources>
             <resource ref="anonymous" />
