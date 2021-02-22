@@ -16,29 +16,27 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 class InstallSchema implements InstallSchemaInterface
 {
 
-public function install (SchemaSetupInterface $setup, ModuleContextInterface $context)
-{
-    $installer = $setup;
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
+    {
+        $installer = $setup;
 
-    $installer->startSetup ();
+        $installer->startSetup();
 
-    /*
-     * Sales Shipment Track
-     */
-    $result = $installer->getConnection()
+        /*
+         * Sales Shipment Track
+         */
+        $result = $installer->getConnection()
         ->addColumn(
             $installer->getTable('sales_shipment_track'),
             'track_url',
-            array(
+            [
                 'type' => Table::TYPE_TEXT,
                 'nullable' => true,
                 'comment' => 'Intelipost Tracking URL',
                 'after' => 'track_number'
-            )
+            ]
         );
 
-    $installer->endSetup();
+        $installer->endSetup();
+    }
 }
-
-}
-

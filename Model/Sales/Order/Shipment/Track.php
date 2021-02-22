@@ -13,10 +13,7 @@ use Magento\Sales\Model\AbstractModel;
 
 use Intelipost\Tracking\Api\Sales\Data\ShipmentTrackInterface;
 
-class Track
-extends \Magento\Sales\Model\Order\Shipment\Track
-// extends AbstractModel
-implements ShipmentTrackInterface
+class Track extends \Magento\Sales\Model\Order\Shipment\Track implements ShipmentTrackInterface // extends AbstractModel
 {
 
 /**
@@ -26,10 +23,10 @@ implements ShipmentTrackInterface
  *
  * @return string
  */
-public function getUrl()
-{
-    return $this->getData('track_url');
-}
+    public function getUrl()
+    {
+        return $this->getData('track_url');
+    }
 
 /**
  * Tracking url setter
@@ -39,10 +36,10 @@ public function getUrl()
  * @param string $number
  * @return \Magento\Framework\DataObject
  */
-public function setUrl($url)
-{
-    return $this->setData('track_url', $url);
-}
+    public function setUrl($url)
+    {
+        return $this->setData('track_url', $url);
+    }
 
 /**
  * Add data to the object.
@@ -52,17 +49,16 @@ public function setUrl($url)
  * @param array $data
  * @return $this
  */
-public function addData(array $data)
-{
-    if (array_key_exists('url', $data))
+    public function addData(array $data)
     {
-        $this->setUrl($data['url']);
+        if (array_key_exists('url', $data)) {
+            $this->setUrl($data['url']);
 
-        unset($data['url']);
+            unset($data['url']);
+        }
+
+        return parent::addData($data);
     }
-
-    return parent::addData($data);
-}
 
 //@codeCoverageIgnoreStart
 
@@ -71,20 +67,18 @@ public function addData(array $data)
  *
  * @return string
  */
-public function getTrackUrl()
-{
-    return $this->getData(ShipmentTrackInterface::TRACK_URL);
-}
+    public function getTrackUrl()
+    {
+        return $this->getData(ShipmentTrackInterface::TRACK_URL);
+    }
 
 /**
  * {@inheritdoc}
  */
-public function setTrackUrl($trackUrl)
-{
-    return $this->setData(ShipmentTrackInterface::TRACK_URL, $trackUrl);
-}
+    public function setTrackUrl($trackUrl)
+    {
+        return $this->setData(ShipmentTrackInterface::TRACK_URL, $trackUrl);
+    }
 
 //@codeCoverageIgnoreEnd
-
 }
-

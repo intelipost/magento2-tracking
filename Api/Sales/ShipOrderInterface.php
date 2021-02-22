@@ -7,8 +7,7 @@
 
 namespace Intelipost\Tracking\Api\Sales;
 
-interface ShipOrderInterface
-extends \Magento\Sales\Api\ShipOrderInterface
+interface ShipOrderInterface extends \Magento\Sales\Api\ShipOrderInterface
 {
 
 /**
@@ -24,16 +23,14 @@ extends \Magento\Sales\Api\ShipOrderInterface
  * @param \Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface|null $arguments
  * @return int Id of created Shipment.
  */
-public function execute(
-    $orderId,
-    array $items = [],
-    $notify = false,
-    $appendComment = false,
-    \Magento\Sales\Api\Data\ShipmentCommentCreationInterface $comment = null,
-    array $tracks = [],
-    array $packages = [],
-    \Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface $arguments = null
-);
-
+    public function execute(
+        $orderId,
+        array $items = [],
+        $notify = false,
+        $appendComment = false,
+        \Magento\Sales\Api\Data\ShipmentCommentCreationInterface $comment = null,
+        array $tracks = [],
+        array $packages = [],
+        \Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface $arguments = null
+    );
 }
-

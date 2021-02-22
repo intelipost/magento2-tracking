@@ -10,8 +10,7 @@ namespace Intelipost\Tracking\Api\Sales\Data;
 // use Magento\Framework\Api\ExtensibleDataInterface;
 // use Magento\Sales\Api\Data\TrackInterface;
 
-interface ShipmentTrackCreationInterface
-extends \Magento\Sales\Api\Data\ShipmentTrackCreationInterface
+interface ShipmentTrackCreationInterface extends \Magento\Sales\Api\Data\ShipmentTrackCreationInterface
 // extends TrackInterface, ExtensibleDataInterface
 {
 
@@ -21,14 +20,14 @@ extends \Magento\Sales\Api\Data\ShipmentTrackCreationInterface
  * @param string $description
  * @return $this
  */
-public function setDescription($description);
+    public function setDescription($description);
 
 /**
  * Gets the track description for the shipment package.
  *
  * @return string description.
  */
-public function getDescription();
+    public function getDescription();
 
 /**
  * Sets the track qty for the shipment package.
@@ -36,14 +35,14 @@ public function getDescription();
  * @param string $qty
  * @return $this
  */
-public function setQty($qty);
+    public function setQty($qty);
 
 /**
  * Gets the track qty for the shipment package.
  *
  * @return string qty.
  */
-public function getQty();
+    public function getQty();
 
 /**
  * Sets the track url for the shipment package.
@@ -51,14 +50,14 @@ public function getQty();
  * @param string $trackUrl
  * @return $this
  */
-public function setTrackUrl($trackUrl);
+    public function setTrackUrl($trackUrl);
 
 /**
  * Gets the track url for the shipment package.
  *
  * @return string Track url.
  */
-public function getTrackUrl();
+    public function getTrackUrl();
 
 /**
  * Sets the track weight for the shipment package.
@@ -66,14 +65,12 @@ public function getTrackUrl();
  * @param string $weight
  * @return $this
  */
-public function setWeight($weight);
+    public function setWeight($weight);
 
 /**
  * Gets the track weight for the shipment package.
  *
  * @return string weight.
  */
-public function getWeight();
-
+    public function getWeight();
 }
-

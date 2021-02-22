@@ -7,103 +7,99 @@
 
 namespace Intelipost\Tracking\Model\Sales\Order\Shipment;
 
-class TrackCreation
-extends \Magento\Sales\Model\Order\Shipment\TrackCreation
-implements \Intelipost\Tracking\Api\Sales\Data\ShipmentTrackCreationInterface
+class TrackCreation extends \Magento\Sales\Model\Order\Shipment\TrackCreation implements \Intelipost\Tracking\Api\Sales\Data\ShipmentTrackCreationInterface
 // implements \Magento\Sales\Api\Data\ShipmentTrackCreationInterface
 {
 
 /**
  * @var string
  */
-private $description;
+    private $description;
 
 /**
  * @var string
  */
-private $qty;
+    private $qty;
 
 /**
  * @var string
  */
-private $trackUrl;
+    private $trackUrl;
 
 /**
  * @var string
  */
-private $weight;
+    private $weight;
 
 //@codeCoverageIgnoreStart
 
 /**
  * {@inheritdoc}
  */
-public function getDescription()
-{
-    return $this->description;
-}
+    public function getDescription()
+    {
+        return $this->description;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function setDescription($description)
-{
-    $this->description = $description;
-    return $this;
-}
+    public function setDescription($description)
+    {
+        $this->description = $description;
+        return $this;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function getQty()
-{
-    return $this->qty;
-}
+    public function getQty()
+    {
+        return $this->qty;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function setQty($qty)
-{
-    $this->qty = $qty;
-    return $this;
-}
+    public function setQty($qty)
+    {
+        $this->qty = $qty;
+        return $this;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function getTrackUrl()
-{
-    return $this->trackUrl;
-}
+    public function getTrackUrl()
+    {
+        return $this->trackUrl;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function setTrackUrl($trackUrl)
-{
-    $this->trackUrl = $trackUrl;
-    return $this;
-}
+    public function setTrackUrl($trackUrl)
+    {
+        $this->trackUrl = $trackUrl;
+        return $this;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function getWeight()
-{
-    return $this->weight;
-}
+    public function getWeight()
+    {
+        return $this->weight;
+    }
 
 /**
  * {@inheritdoc}
  */
-public function setWeight($weight)
-{
-    $this->weight = $weight;
-    return $this;
-}
+    public function setWeight($weight)
+    {
+        $this->weight = $weight;
+        return $this;
+    }
 
 //@codeCoverageIgnoreEnd
-
 }
-

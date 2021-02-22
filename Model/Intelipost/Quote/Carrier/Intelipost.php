@@ -9,48 +9,45 @@ namespace Intelipost\Tracking\Model\Intelipost\Quote\Carrier;
 
 use Magento\Quote\Model\Quote\Address\RateRequest;
 
-class Intelipost
-extends \Magento\Shipping\Model\Carrier\AbstractCarrier
-implements \Magento\Shipping\Model\Carrier\CarrierInterface
+class Intelipost extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements \Magento\Shipping\Model\Carrier\CarrierInterface
 {
 
-protected $_code = 'intelipost_tracking';
+    protected $_code = 'intelipost_tracking';
 
-protected $_trackResultFactory;
-protected $_trackResultErrorFactory;
-protected $_trackResultStatusFactory;
+    protected $_trackResultFactory;
+    protected $_trackResultErrorFactory;
+    protected $_trackResultStatusFactory;
 
-protected $_trackFactory;
+    protected $_trackFactory;
 
-public function __construct(
-    \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-    \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
-    \Psr\Log\LoggerInterface $logger,
-    \Magento\Shipping\Model\Tracking\ResultFactory $trackResultFactory,
-    \Magento\Shipping\Model\Tracking\Result\ErrorFactory $trackResultErrorFactory,
-    \Magento\Shipping\Model\Tracking\Result\StatusFactory $trackResultStatusFactory,
-    \Intelipost\Tracking\Model\Sales\Order\Shipment\TrackFactory $trackFactory,
-    array $data = []
-)
-{
-    $this->_trackResultFactory = $trackResultFactory;
-    $this->_trackResultErrorFactory = $trackResultErrorFactory;
-    $this->_trackResultStatusFactory = $trackResultStatusFactory;
+    public function __construct(
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Shipping\Model\Tracking\ResultFactory $trackResultFactory,
+        \Magento\Shipping\Model\Tracking\Result\ErrorFactory $trackResultErrorFactory,
+        \Magento\Shipping\Model\Tracking\Result\StatusFactory $trackResultStatusFactory,
+        \Intelipost\Tracking\Model\Sales\Order\Shipment\TrackFactory $trackFactory,
+        array $data = []
+    ) {
+        $this->_trackResultFactory = $trackResultFactory;
+        $this->_trackResultErrorFactory = $trackResultErrorFactory;
+        $this->_trackResultStatusFactory = $trackResultStatusFactory;
 
-    $this->_trackFactory = $trackFactory;
+        $this->_trackFactory = $trackFactory;
 
-    parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
-}
+        parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
+    }
 
-public function collectRates(RateRequest $request)
-{
-    return;
-}
+    public function collectRates(RateRequest $request)
+    {
+        return;
+    }
 
-public function getAllowedMethods()
-{
-    return ['intelipost_tracking' => $this->getConfigData ('name')];
-}
+    public function getAllowedMethods()
+    {
+        return ['intelipost_tracking' => $this->getConfigData('name')];
+    }
 
 /**
  * Get tracking
@@ -58,17 +55,16 @@ public function getAllowedMethods()
  * @param string|string[] $trackings
  * @return Result
  */
-public function getTracking($trackings)
-{
-    if (!is_array($trackings))
+    public function getTracking($trackings)
     {
-        $trackings = [$trackings];
+        if (!is_array($trackings)) {
+            $trackings = [$trackings];
+        }
+
+        $result = $this->_getTracking($trackings);
+
+        return $result;
     }
-
-    $result = $this->_getTracking($trackings);
-
-    return $result;
-}
 
 /**
  * Get tracking
@@ -76,27 +72,26 @@ public function getTracking($trackings)
  * @param string[] $trackings
  * @return \Magento\Shipping\Model\Tracking\ResultFactory
  */
-protected function _getTracking($trackings)
-{
-    $result = $this->_trackResultFactory->create();
-    foreach ($trackings as $tracking)
+    protected function _getTracking($trackings)
     {
-        $track = $this->_trackFactory->create()->load($tracking, 'track_number');
-        $trackUrl = $track->getTrackUrl();
+        $result = $this->_trackResultFactory->create();
+        foreach ($trackings as $tracking) {
+            $track = $this->_trackFactory->create()->load($tracking, 'track_number');
+            $trackUrl = $track->getTrackUrl();
 
-        $status = $this->_trackResultStatusFactory->create();
-        $status->setCarrier($this->_code);
-        $status->setCarrierTitle($this->getConfigData('title'));
-        $status->setTracking($tracking);
-        $status->setTrackSummary($this->_getIntelipostTracking($trackUrl));
-        $status->setPopup(1);
-        $status->setUrl($trackUrl);
+            $status = $this->_trackResultStatusFactory->create();
+            $status->setCarrier($this->_code);
+            $status->setCarrierTitle($this->getConfigData('title'));
+            $status->setTracking($tracking);
+            $status->setTrackSummary($this->_getIntelipostTracking($trackUrl));
+            $status->setPopup(1);
+            $status->setUrl($trackUrl);
 
-        $result->append($status);
+            $result->append($status);
+        }
+
+        return $result;
     }
-
-    return $result;
-}
 
 /**
  * Get Intelipost tracking information
@@ -105,36 +100,38 @@ protected function _getTracking($trackings)
  * @return string|false
  * @api
  */
-public function _getIntelipostTracking($url)
-{
-    if(empty($url)) return;
+    public function _getIntelipostTracking($url)
+    {
+        if (empty($url)) {
+            return;
+        }
 
-    $httpHeaders = new \Zend\Http\Headers();
-    $httpHeaders->addHeaders([
+        $httpHeaders = new \Zend\Http\Headers();
+        $httpHeaders->addHeaders([
         'Accept-encoding' => 'identity',
-    ]);
+        ]);
 
-    $request = new \Zend\Http\Request();
-    $request->setHeaders($httpHeaders);
-    $request->setUri($url);
-    $request->setMethod(\Zend\Http\Request::METHOD_GET);
+        $request = new \Zend\Http\Request();
+        $request->setHeaders($httpHeaders);
+        $request->setUri($url);
+        $request->setMethod(\Zend\Http\Request::METHOD_GET);
 
-    $client = new \Zend\Http\Client();
-    $options = [
-       'adapter'   => 'Zend\Http\Client\Adapter\Curl',
-       'curloptions' => [CURLOPT_FOLLOWLOCATION => true],
-       'maxredirects' => 0,
-       'timeout' => 10
-    ];
-    $client->setOptions($options);
+        $client = new \Zend\Http\Client();
+        $options = [
+           'adapter'   => 'Zend\Http\Client\Adapter\Curl',
+           'curloptions' => [CURLOPT_FOLLOWLOCATION => true],
+           'maxredirects' => 0,
+           'timeout' => 10
+        ];
+        $client->setOptions($options);
 
-    $response = $client->send($request);
-    $result = $response->getBody();
-    $html = "<iframe width=\"100%\"height=\"700px\" src=$url></iframe>";
-    $result = $html;
+        $response = $client->send($request);
+        $result = $response->getBody();
+        $html = "<iframe width=\"100%\"height=\"700px\" src=$url></iframe>";
+        $result = $html;
 
-    return $result;
-}
+        return $result;
+    }
 
 /**
  * Get tracking information
@@ -143,35 +140,29 @@ public function _getIntelipostTracking($url)
  * @return string|false
  * @api
  */
-public function getTrackingInfo($tracking)
-{
-    $result = $this->getTracking($tracking);
-
-    if ($result instanceof \Magento\Shipping\Model\Tracking\Result)
+    public function getTrackingInfo($tracking)
     {
-        $trackings = $result->getAllTrackings();
-        if ($trackings)
-        {
-            return $trackings[0];
+        $result = $this->getTracking($tracking);
+
+        if ($result instanceof \Magento\Shipping\Model\Tracking\Result) {
+            $trackings = $result->getAllTrackings();
+            if ($trackings) {
+                return $trackings[0];
+            }
+        } elseif (is_string($result) && !empty($result)) {
+            return $result;
         }
-    }
-    elseif (is_string($result) && !empty($result))
-    {
-        return $result;
-    }
 
-    return false;
-}
+        return false;
+    }
 
 /**
  * Check if carrier has shipping tracking option available
  *
  * @return boolean
  */
-public function isTrackingAvailable()
-{
-    return true;
+    public function isTrackingAvailable()
+    {
+        return true;
+    }
 }
-
-}
-

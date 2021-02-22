@@ -22,21 +22,19 @@ use Magento\Sales\Model\Order\Validation\ShipOrderInterface as ShipOrderValidato
 use Psr\Log\LoggerInterface;
 use Magento\Framework\App\ObjectManager;
 
-class ShipOrder
-extends \Magento\Sales\Model\ShipOrder
-implements \Intelipost\Tracking\Api\Sales\ShipOrderInterface
+class ShipOrder extends \Magento\Sales\Model\ShipOrder implements \Intelipost\Tracking\Api\Sales\ShipOrderInterface
 {
 
-private $resourceConnection;
-private $orderRepository;
-private $shipmentDocumentFactory;
-private $orderStateResolver;
-private $config;
-private $shipmentRepository;
-private $shipOrderValidator;
-private $notifierInterface;
-private $logger;
-private $orderRegistrar;
+    private $resourceConnection;
+    private $orderRepository;
+    private $shipmentDocumentFactory;
+    private $orderStateResolver;
+    private $config;
+    private $shipmentRepository;
+    private $shipOrderValidator;
+    private $notifierInterface;
+    private $logger;
+    private $orderRegistrar;
 
 /**
  * @param ResourceConnection $resourceConnection
@@ -54,34 +52,33 @@ private $orderRegistrar;
  * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  * @SuppressWarnings(PHPMD.UnusedFormalParameter)
  */
-public function __construct(
-    ResourceConnection $resourceConnection,
-    OrderRepositoryInterface $orderRepository,
-    ShipmentDocumentFactory $shipmentDocumentFactory,
-    ShipmentValidatorInterface $shipmentValidator,
-    OrderValidatorInterface $orderValidator,
-    OrderStateResolverInterface $orderStateResolver,
-    OrderConfig $config,
-    ShipmentRepositoryInterface $shipmentRepository,
-    NotifierInterface $notifierInterface,
-    OrderRegistrarInterface $orderRegistrar,
-    LoggerInterface $logger,
-    ShipOrderValidator $shipOrderValidator = null
-)
-{
-    $this->resourceConnection = $resourceConnection;
-    $this->orderRepository = $orderRepository;
-    $this->shipmentDocumentFactory = $shipmentDocumentFactory;
-    $this->orderStateResolver = $orderStateResolver;
-    $this->config = $config;
-    $this->shipmentRepository = $shipmentRepository;
-    $this->notifierInterface = $notifierInterface;
-    $this->logger = $logger;
-    $this->orderRegistrar = $orderRegistrar;
-    $this->shipOrderValidator = $shipOrderValidator ?: ObjectManager::getInstance()->get(
-        ShipOrderValidator::class
-    );
-}
+    public function __construct(
+        ResourceConnection $resourceConnection,
+        OrderRepositoryInterface $orderRepository,
+        ShipmentDocumentFactory $shipmentDocumentFactory,
+        ShipmentValidatorInterface $shipmentValidator,
+        OrderValidatorInterface $orderValidator,
+        OrderStateResolverInterface $orderStateResolver,
+        OrderConfig $config,
+        ShipmentRepositoryInterface $shipmentRepository,
+        NotifierInterface $notifierInterface,
+        OrderRegistrarInterface $orderRegistrar,
+        LoggerInterface $logger,
+        ShipOrderValidator $shipOrderValidator = null
+    ) {
+        $this->resourceConnection = $resourceConnection;
+        $this->orderRepository = $orderRepository;
+        $this->shipmentDocumentFactory = $shipmentDocumentFactory;
+        $this->orderStateResolver = $orderStateResolver;
+        $this->config = $config;
+        $this->shipmentRepository = $shipmentRepository;
+        $this->notifierInterface = $notifierInterface;
+        $this->logger = $logger;
+        $this->orderRegistrar = $orderRegistrar;
+        $this->shipOrderValidator = $shipOrderValidator ?: ObjectManager::getInstance()->get(
+            ShipOrderValidator::class
+        );
+    }
 
 /**
  * @param int $orderId
@@ -99,85 +96,76 @@ public function __construct(
  * @throws \Magento\Framework\Exception\NoSuchEntityException
  * @throws \DomainException
  */
-public function execute(
-    $orderId,
-    array $items = [],
-    $notify = false,
-    $appendComment = false,
-    \Magento\Sales\Api\Data\ShipmentCommentCreationInterface $comment = null,
-    array $tracks = [],
-    array $packages = [],
-    \Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface $arguments = null
-)
-{
-    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-    $shipmentDocumentFactory = $objectManager->create('Intelipost\Tracking\Model\Sales\Order\ShipmentDocumentFactory');
+    public function execute(
+        $orderId,
+        array $items = [],
+        $notify = false,
+        $appendComment = false,
+        \Magento\Sales\Api\Data\ShipmentCommentCreationInterface $comment = null,
+        array $tracks = [],
+        array $packages = [],
+        \Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface $arguments = null
+    ) {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $shipmentDocumentFactory = $objectManager->create('Intelipost\Tracking\Model\Sales\Order\ShipmentDocumentFactory');
 
-    $connection = $this->resourceConnection->getConnection('sales');
-    $order = $this->orderRepository->get($orderId);
+        $connection = $this->resourceConnection->getConnection('sales');
+        $order = $this->orderRepository->get($orderId);
 
-    $shipment = $shipmentDocumentFactory->create(
-        $order,
-        $items,
-        $tracks,
-        $comment,
-        ($appendComment && $notify),
-        $packages,
-        $arguments
-    );
-
-    $validationMessages = $this->shipOrderValidator->validate(
-        $order,
-        $shipment,
-        $items,
-        $notify,
-        $appendComment,
-        $comment,
-        $tracks,
-        $packages
-    );
-
-    if ($validationMessages->hasMessages())
-    {
-        throw new \Magento\Sales\Exception\DocumentValidationException(
-            __("Shipment Document Validation Error(s):\n" . implode("\n", $validationMessages->getMessages()))
+        $shipment = $shipmentDocumentFactory->create(
+            $order,
+            $items,
+            $tracks,
+            $comment,
+            ($appendComment && $notify),
+            $packages,
+            $arguments
         );
-    }
 
-    $connection->beginTransaction();
-    try
-    {
-        $this->orderRegistrar->register($order, $shipment);
-        $order->setState(
-            $this->orderStateResolver->getStateForOrder($order, [OrderStateResolverInterface::IN_PROGRESS])
+        $validationMessages = $this->shipOrderValidator->validate(
+            $order,
+            $shipment,
+            $items,
+            $notify,
+            $appendComment,
+            $comment,
+            $tracks,
+            $packages
         );
-        $order->setStatus($this->config->getStateDefaultStatus($order->getState()));
-        $this->shipmentRepository->save($shipment);
-        $this->orderRepository->save($order);
-        $connection->commit();
-    }
-    catch (\Exception $e)
-    {
-        $this->logger->critical($e);
-        $connection->rollBack();
 
-        throw new \Magento\Sales\Exception\CouldNotShipException(
-            __('Could not save a shipment, see error log for details')
-        );
-    }
-
-    if ($notify)
-    {
-        if (!$appendComment)
-        {
-            $comment = null;
+        if ($validationMessages->hasMessages()) {
+            throw new \Magento\Sales\Exception\DocumentValidationException(
+                __("Shipment Document Validation Error(s):\n" . implode("\n", $validationMessages->getMessages()))
+            );
         }
 
-        $this->notifierInterface->notify($order, $shipment, $comment);
+        $connection->beginTransaction();
+        try {
+            $this->orderRegistrar->register($order, $shipment);
+            $order->setState(
+                $this->orderStateResolver->getStateForOrder($order, [OrderStateResolverInterface::IN_PROGRESS])
+            );
+            $order->setStatus($this->config->getStateDefaultStatus($order->getState()));
+            $this->shipmentRepository->save($shipment);
+            $this->orderRepository->save($order);
+            $connection->commit();
+        } catch (\Exception $e) {
+            $this->logger->critical($e);
+            $connection->rollBack();
+
+            throw new \Magento\Sales\Exception\CouldNotShipException(
+                __('Could not save a shipment, see error log for details')
+            );
+        }
+
+        if ($notify) {
+            if (!$appendComment) {
+                $comment = null;
+            }
+
+            $this->notifierInterface->notify($order, $shipment, $comment);
+        }
+
+        return $shipment->getEntityId();
     }
-
-    return $shipment->getEntityId();
 }
-
-}
-

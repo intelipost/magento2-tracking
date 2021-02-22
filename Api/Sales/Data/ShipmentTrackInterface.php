@@ -10,8 +10,7 @@ namespace Intelipost\Tracking\Api\Sales\Data;
 // use Magento\Framework\Api\ExtensibleDataInterface;
 // use Magento\Sales\Api\Data\TrackInterface;
 
-interface ShipmentTrackInterface
-extends \Magento\Sales\Api\Data\ShipmentTrackInterface
+interface ShipmentTrackInterface extends \Magento\Sales\Api\Data\ShipmentTrackInterface
 // extends TrackInterface, ExtensibleDataInterface
 {
 
@@ -22,7 +21,7 @@ extends \Magento\Sales\Api\Data\ShipmentTrackInterface
 /*
  * Track url.
  */
-const TRACK_URL = 'track_url';
+    const TRACK_URL = 'track_url';
 
 /**
  * Sets the track url for the shipment package.
@@ -30,14 +29,12 @@ const TRACK_URL = 'track_url';
  * @param string $trackUrl
  * @return $this
  */
-public function setTrackUrl($trackUrl);
+    public function setTrackUrl($trackUrl);
 
 /**
  * Gets the track url for the shipment package.
  *
  * @return string Track url.
  */
-public function getTrackUrl();
-
+    public function getTrackUrl();
 }
-

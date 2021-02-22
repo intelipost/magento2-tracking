@@ -7,8 +7,7 @@
 
 namespace Intelipost\Tracking\View\Element;
 
-class Template
-extends \Magento\Framework\View\Element\Template
+class Template extends \Magento\Framework\View\Element\Template
 // extends AbstractBlock
 {
 
@@ -19,10 +18,8 @@ extends \Magento\Framework\View\Element\Template
  * @param array|null $allowedTags
  * @return string
  */
-public function escapeHtml($data, $allowedTags = null)
-{
-    return $data; // $this->_escaper->escapeHtml($data, $allowedTags);
+    public function escapeHtml($data, $allowedTags = null)
+    {
+        return $data; // $this->_escaper->escapeHtml($data, $allowedTags);
+    }
 }
-
-}
-

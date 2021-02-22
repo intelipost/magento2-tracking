@@ -23,9 +23,9 @@ use Intelipost\Tracking\Model\Sales\Order\Shipment\TrackFactory;
 class ShipmentDocumentFactory
 {
 
-private $shipmentFactory;
-private $trackFactory;
-private $hydratorPool;
+    private $shipmentFactory;
+    private $trackFactory;
+    private $hydratorPool;
 
 /**
  * ShipmentDocumentFactory constructor.
@@ -34,16 +34,15 @@ private $hydratorPool;
  * @param HydratorPool $hydratorPool
  * @param TrackFactory $trackFactory
  */
-public function __construct(
-    ShipmentFactory $shipmentFactory,
-    // HydratorPool $hydratorPool,
-    TrackFactory $trackFactory
-)
-{
-    $this->shipmentFactory = $shipmentFactory;
-    $this->trackFactory = $trackFactory;
-    // $this->hydratorPool = $hydratorPool;
-}
+    public function __construct(
+        ShipmentFactory $shipmentFactory,
+        // HydratorPool $hydratorPool,
+        TrackFactory $trackFactory
+    ) {
+        $this->shipmentFactory = $shipmentFactory;
+        $this->trackFactory = $trackFactory;
+        // $this->hydratorPool = $hydratorPool;
+    }
 
 /**
  * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -57,34 +56,32 @@ public function __construct(
  * @param ShipmentCreationArgumentsInterface|null $arguments
  * @return ShipmentInterface
  */
-public function create(
-    OrderInterface $order,
-    array $items = [],
-    array $tracks = [],
-    ShipmentCommentCreationInterface $comment = null,
-    $appendComment = false,
-    array $packages = [],
-    ShipmentCreationArgumentsInterface $arguments = null
-)
-{
-    $shipmentItems = $this->itemsToArray($items);
-    /** @var Shipment $shipment */
-    $shipment = $this->shipmentFactory->create(
-        $order,
-        $shipmentItems
-    );
-    $this->prepareTracks($shipment, $tracks);
-    if ($comment)
-    {
-        $shipment->addComment(
-            $comment->getComment(),
-            $appendComment,
-            $comment->getIsVisibleOnFront()
+    public function create(
+        OrderInterface $order,
+        array $items = [],
+        array $tracks = [],
+        ShipmentCommentCreationInterface $comment = null,
+        $appendComment = false,
+        array $packages = [],
+        ShipmentCreationArgumentsInterface $arguments = null
+    ) {
+        $shipmentItems = $this->itemsToArray($items);
+        /** @var Shipment $shipment */
+        $shipment = $this->shipmentFactory->create(
+            $order,
+            $shipmentItems
         );
-    }
+        $this->prepareTracks($shipment, $tracks);
+        if ($comment) {
+            $shipment->addComment(
+                $comment->getComment(),
+                $appendComment,
+                $comment->getIsVisibleOnFront()
+            );
+        }
 
-    return $shipment;
-}
+        return $shipment;
+    }
 
 /**
  * Adds tracks to the shipment.
@@ -93,35 +90,34 @@ public function create(
  * @param ShipmentTrackCreationInterface[] $tracks
  * @return ShipmentInterface
  */
-private function prepareTracks(/* \Magento\Sales\Api\Data\ShipmentInterface */ $shipment, array $tracks)
-{
-    foreach ($tracks as $track)
+    private function prepareTracks(/* \Magento\Sales\Api\Data\ShipmentInterface */ $shipment, array $tracks)
     {
-        /*
-        $hydrator = $this->hydratorPool->getHydrator(
+        foreach ($tracks as $track) {
+            /*
+            $hydrator = $this->hydratorPool->getHydrator(
             \Intelipost\Tracking\Api\Sales\Data\ShipmentTrackCreationInterface::class
-        );
+            );
 
-        $data = $hydrator->extract($track);
-        */
+            $data = $hydrator->extract($track);
+            */
 
-        $data = [];
+            $data = [];
 
-        $data[ShipmentTrackInterface::CARRIER_CODE] = $track->getCarrierCode();
-        $data[ShipmentTrackInterface::TITLE] = $track->getTitle();
-        $data[ShipmentTrackInterface::TRACK_NUMBER] = $track->getTrackNumber();
+            $data[ShipmentTrackInterface::CARRIER_CODE] = $track->getCarrierCode();
+            $data[ShipmentTrackInterface::TITLE] = $track->getTitle();
+            $data[ShipmentTrackInterface::TRACK_NUMBER] = $track->getTrackNumber();
 
-        // Extra
-        $data [ShipmentTrackInterface::DESCRIPTION] = $track->getDescription();
-        $data [ShipmentTrackInterface::QTY] = $track->getQty();
-        $data [ShipmentTrackInterface::TRACK_URL] = $track->getTrackUrl();
-        $data [ShipmentTrackInterface::WEIGHT] = $track->getWeight();
+            // Extra
+            $data [ShipmentTrackInterface::DESCRIPTION] = $track->getDescription();
+            $data [ShipmentTrackInterface::QTY] = $track->getQty();
+            $data [ShipmentTrackInterface::TRACK_URL] = $track->getTrackUrl();
+            $data [ShipmentTrackInterface::WEIGHT] = $track->getWeight();
 
-        $shipment->addTrack($this->trackFactory->create(['data' => $data /* $hydrator->extract($track) */]));
+            $shipment->addTrack($this->trackFactory->create(['data' => $data /* $hydrator->extract($track) */]));
+        }
+
+        return $shipment;
     }
-
-    return $shipment;
-}
 
 /**
  * Convert items to array
@@ -129,16 +125,13 @@ private function prepareTracks(/* \Magento\Sales\Api\Data\ShipmentInterface */ $
  * @param ShipmentItemCreationInterface[] $items
  * @return array
  */
-private function itemsToArray(array $items = [])
-{
-    $shipmentItems = [];
-    foreach ($items as $item)
+    private function itemsToArray(array $items = [])
     {
-        $shipmentItems[$item->getOrderItemId()] = $item->getQty();
+        $shipmentItems = [];
+        foreach ($items as $item) {
+            $shipmentItems[$item->getOrderItemId()] = $item->getQty();
+        }
+
+        return $shipmentItems;
     }
-
-    return $shipmentItems;
 }
-
-}
-

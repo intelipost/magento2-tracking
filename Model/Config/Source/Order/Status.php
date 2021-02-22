@@ -15,17 +15,16 @@ class Status implements OptionSourceInterface
 
     public function __construct(
         \Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory $statusCollectionFactory
-        ) 
-    {       
+    ) {
         $this->_statusCollectionFactory = $statusCollectionFactory;
     }
 
     public function toOptionArray()
     {
-        $pleaseSelect = array(
-        array ('value' => '', 'label' => __(' --- Please Select --- '))
-        );
+        $pleaseSelect = [
+         ['value' => '', 'label' => __(' --- Please Select --- ')]
+        ];
         $options = $this->_statusCollectionFactory->create()->toOptionArray();
-        return array_merge ($pleaseSelect, $options);
+        return array_merge($pleaseSelect, $options);
     }
 }
